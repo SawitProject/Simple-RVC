@@ -13,7 +13,7 @@ from torch.nn.utils.parametrizations import weight_norm
 
 sys.path.append(os.getcwd())
 
-from modules.commons import init_weights, get_padding
+from rvc.lib.algorithm.commons import init_weights, get_padding
 
 
 class ResBlock(nn.Module):
