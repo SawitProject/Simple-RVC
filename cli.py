@@ -74,7 +74,8 @@ class VoiceConverter:
             if audio_max > 1: audio /= audio_max
 
             if not self.hubert_model:
-                embedder_model_path = os.path.join("models", embedder_model + ".pt")
+                HUBERT_PATH = os.path.join(os.getcwd(), "assets", "models")
+                embedder_model_path = os.path.join(HUBERT_PATH, embedder_model + ".pt")
                 if not os.path.exists(embedder_model_path): raise FileNotFoundError(f"[ERROR] Not found embeddeder: {embedder_model}")
 
                 models = fairseq.load_model(embedder_model_path).to(self.device).eval()
