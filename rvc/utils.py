@@ -13,7 +13,7 @@ import torch.nn.functional as F
 sys.path.append(os.getcwd())
 
 from rvc.lib.backend import opencl
-from rvc.lib.configs import PREDICTOR_MODEL
+from rvc.lib.config import PREDICTOR_MODEL
 
 def change_rms(source_audio, source_rate, target_audio, target_rate, rate):
     rms2 = F.interpolate(torch.from_numpy(librosa.feature.rms(y=target_audio, frame_length=target_rate // 2 * 2, hop_length=target_rate // 2)).float().unsqueeze(0), size=target_audio.shape[0], mode="linear").squeeze()
