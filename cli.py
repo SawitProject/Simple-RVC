@@ -17,7 +17,9 @@ from rvc.tools.cut import cut, restore
 from rvc.infer.pipeline import Pipeline
 from rvc.utils import clear_gpu_cache, check_predictors, check_embedders, load_audio
 from rvc.lib.algorithm.synthesizers import Synthesizer
-from rvc.lib.config import *
+# IMPORT FIX: Ensure this imports the singleton class we just fixed
+from rvc.lib.config import Config 
+
 # Configure logging to silence noisy libraries
 for l in ["torch", "faiss", "omegaconf", "httpx", "httpcore", "faiss.loader", "numba.core", "urllib3", "transformers", "matplotlib"]:
     logging.getLogger(l).setLevel(logging.ERROR)
@@ -230,14 +232,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Setup device config (Assuming basic logic or pulling from rvc.config if available)
-    # Since the original script passed 'config' object, we mock a minimal one here
-    # If you have a specific Config class from rvc.config, import it instead.
-    class Config:
-        def __init__(self):
-            self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            self.is_half = True if self.device.startswith("cuda") else False
-
+    # FIX REMOVED: The dummy 'class Config' has been removed.
+    # We will use the imported singleton from rvc.lib.config
+    
+    # Initialize config using the singleton pattern
+    # Note: If you want to force CPU, you can pass cpu_mode=True here
     config = Config()
 
     check_predictors(args.f0_method)
