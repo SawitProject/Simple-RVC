@@ -6,7 +6,6 @@ sys.path.append(os.getcwd())
 
 from rvc.lib.backend import opencl
 
-# Corrected path constant (removed space in " models")
 PREDICTOR_MODEL = os.path.join(os.getcwd(), "assets", "models")
 
 
@@ -28,33 +27,32 @@ class Config:
         self.cpu_mode = cpu_mode
         if cpu_mode: self.device = "cpu"
 
+    # INDENTATION FIXED: This method must be inside the class
     def device_config(self):
         if not self.cpu_mode:
             if self.device.startswith("cuda"): 
                 self.set_cuda_config()
             elif opencl.is_available(): 
                 self.device = "ocl:0"
-                # FIX: Set a default gpu_mem for OpenCL so config is calculated
+                # Set default memory for OpenCL to prevent None errors
                 self.gpu_mem = 4 
             elif self.has_mps(): 
                 self.device = "mps"
-                # FIX: Calculate gpu_mem for MPS (assuming unified memory size)
-                # We use 4GB as a conservative default if query fails or to avoid overhead
+                # Set default memory for MPS to prevent None errors
                 self.gpu_mem = 4 
             else: 
                 self.device = "cpu"
 
-        # FIX: Ensure gpu_mem is not None before the check, 
-        # or explicitly handle the return for all cases.
-        # If gpu_mem is None (e.g. on CPU mode), treat it as low memory scenario.
-        
+        # Ensure gpu_mem is not None before checking logic
         if self.gpu_mem is not None and self.gpu_mem <= 4: 
             return 1, 5, 30, 32
         return (3, 10, 60, 65) if self.is_half else (1, 6, 38, 41)
 
+    # INDENTATION FIXED
     def set_cuda_config(self):
         i_device = int(self.device.split(":")[-1])
         self.gpu_mem = torch.cuda.get_device_properties(i_device).total_memory // (1024**3)
 
+    # INDENTATION FIXED
     def has_mps(self):
         return torch.backends.mps.is_available()
