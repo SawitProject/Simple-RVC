@@ -10,7 +10,7 @@ from scipy import signal
 
 sys.path.append(os.getcwd())
 
-from rvc.lib.predictor import Generator
+from rvc.lib.predictor.generator import Generator
 from rvc.lib.backend.rms import RMSEnergyExtractor
 from rvc.utils import change_rms, clear_gpu_cache
 
