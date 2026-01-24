@@ -61,7 +61,7 @@ def check_embedders(hubert):
     if hubert in ["contentvec_base", "hubert_base", "japanese_hubert_base", "korean_hubert_base", "chinese_hubert_base", "portuguese_hubert_base", "spin"]:
         hubert += ".pt"
         HUBERT_PATH = os.path.join(os.getcwd(), "assets", " models", hubert)
-        if not os.path.exists(model_path): 
+        if not os.path.exists(HUBERT_PATH): 
             HF_download_file("".join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/embedders/", "fairseq/", hubert), HUBERT_PATH)
 
 def load_audio(file, sample_rate=16000, formant_shifting=False, formant_qfrency=0.8, formant_timbre=0.8):
