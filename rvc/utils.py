@@ -5,10 +5,10 @@ import torch
 import codecs
 import librosa
 import requests
-
 import numpy as np
 import soundfile as sf
 import torch.nn.functional as F
+from tqdm import tqdm  # Imported for progress bar
 
 sys.path.append(os.getcwd())
 
@@ -29,20 +29,40 @@ def clear_gpu_cache():
 def HF_download_file(url, output_path=None):
     url = url.replace("/blob/", "/resolve/").replace("?download=true", "").strip()
     output_path = os.path.basename(url) if output_path is None else (os.path.join(output_path, os.path.basename(url)) if os.path.isdir(output_path) else output_path)
+    
+    # Ensure the directory exists before attempting to write the file
+    output_dir = os.path.dirname(output_path)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+
     response = requests.get(url, stream=True, timeout=300)
 
     if response.status_code == 200:
+        total_size = int(response.headers.get('content-length', 0))
+        
+        # Initialize progress bar
+        progress_bar = tqdm(total=total_size, unit='B', unit_scale=True, desc=os.path.basename(output_path))
+        
         with open(output_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
-                f.write(chunk)
-
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+                    progress_bar.update(len(chunk))
+        
+        progress_bar.close()
         return output_path
-    else: raise ValueError(response.status_code)
+    else: 
+        raise ValueError(f"Failed to download. Status Code: {response.status_code}")
 
 def check_predictors(method):
     def download(predictors):
         if not os.path.exists(PREDICTOR_MODEL): 
-           HF_download_file(os.path.join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/predictors/" + predictors), PREDICTOR_MODEL)
+           # Ensure directory exists
+           predictor_dir = os.path.dirname(PREDICTOR_MODEL)
+           if predictor_dir and not os.path.exists(predictor_dir):
+               os.makedirs(predictor_dir, exist_ok=True)
+               
+           HF_download_file(os.path.join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/predictors/", predictors), PREDICTOR_MODEL)
 
     model_dict = {
         **dict.fromkeys(["rmvpe", "rmvpe-legacy"], "rmvpe.pt"), 
@@ -60,7 +80,8 @@ def check_predictors(method):
 def check_embedders(hubert):
     if hubert in ["contentvec_base", "hubert_base", "japanese_hubert_base", "korean_hubert_base", "chinese_hubert_base", "portuguese_hubert_base", "spin"]:
         hubert += ".pt"
-        HUBERT_PATH = os.path.join(os.getcwd(), "assets", " models", hubert)
+        # FIXED: Removed the leading space in " models" -> "models"
+        HUBERT_PATH = os.path.join(os.getcwd(), "assets", "models", hubert)
         if not os.path.exists(HUBERT_PATH): 
             HF_download_file(os.path.join("https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/embedders/fairseq/", hubert), HUBERT_PATH)
 
