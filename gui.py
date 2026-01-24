@@ -134,7 +134,7 @@ def save_drop_model(dropbox):
 def update_model_value():
     global model_folders
 
-    model_folders = sorted([os.path.join(root, name) for root, _, files in os.walk("rvc_models", topdown=False) for name in files if name.endswith(".pth")])
+    model_folders = sorted([os.path.join(root, name) for root, _, files in os.walk("assets", "rvc_models", topdown=False) for name in files if name.endswith(".pth")])
     model_path_dropdown.configure(values=model_folders)
     model_path_dropdown.update()
 
@@ -421,10 +421,9 @@ def start_processing():
     t = threading.Thread(target=on_click)
     t.start()
 
-# Nền giao diện chính
 
 root = ctk.CTk()
-root.title("RVC GUI")
+root.title("SIMPLE RVC")
 
 root.geometry("800x825")
 root.resizable(False, False)
@@ -456,13 +455,12 @@ right_frame = ctk.CTkFrame(
     fg_color="#404040"
 )
 
-# Đặt vị trí của khung
+
 
 above_left.place(x=11, y=10)
 bottom_left.place(x=11, y=308)
 right_frame.place(x=465, y=10)
 
-# Khung trong bên trái
 
 left_above_frame = ctk.CTkFrame(
     master=above_left,
@@ -480,7 +478,6 @@ left_bottom_frame = ctk.CTkFrame(
     fg_color="#262626"
 )
 
-# Khung trong bên phải
 
 right_above_frame = ctk.CTkFrame(
     master=right_frame,
@@ -544,7 +541,6 @@ browse_button = ctk.CTkButton(
     command=browse_file
 )
 
-# Đầu ra âm thanh
 
 output_audio_label = ctk.CTkLabel(
     master=left_above_frame, 
@@ -563,7 +559,6 @@ output_path_frame = ctk.CTkTextbox(
     border_color="#404040"
 )
 
-# Vị trí đầu vào, ra âm thanh và chọn tệp
 
 input_audio_label.place(x=10, y=21)
 input_path_frame.place(x=100, y=10)
@@ -573,7 +568,6 @@ browse_button.place(x=290, y=10)
 output_audio_label.place(x=10, y=81)
 output_path_frame.place(x=100, y=70)
 
-# Phần trích xuất nhúng và trích xuất cao độ
 
 f0_method_label = ctk.CTkLabel(
     master=left_bottom_frame, 
@@ -610,7 +604,6 @@ embedders_dropdown = ctk.CTkOptionMenu(
     dynamic_resizing=False
 )
 
-# Vị trí trích xuất cao độ, nhúng và đặt mặc định
 
 f0_method_label.place(x=10, y=21)
 f0_method_dropdown.place(x=75, y=10)
@@ -641,7 +634,6 @@ pitch_slider = ctk.CTkSlider(
     command=pitch_slider_event
 )
 
-# Vị trí của thanh trượt cao độ và đặt mặc định
 
 pitch_label.place(x=320, y=70)
 pitch_slider.place(x=10, y=70)
@@ -660,11 +652,9 @@ conversion_button = ctk.CTkButton(
     command=start_processing
 )
 
-# Vị trí nút chuyển đổi
 
 conversion_button.place(x=131, y=100)
 
-# Thanh quá trình và kết quả
 
 process_frame = ctk.CTkFrame(
     master=bottom_left,
@@ -708,7 +698,6 @@ open_output_button = ctk.CTkButton(
     command=play_audio
 )
 
-# Vị trí thanh quá trình và kết quả
 
 #result_state.place(relx=0.5, y=60, anchor="n")
 #process_frame.place(x=100, y=10)
@@ -717,7 +706,6 @@ open_output_button = ctk.CTkButton(
 loading_label.place(x=50, y=10)
 loading_progress.place(x=50, y=40)
 
-# Phần mẹo thông tin
 
 notes_label = ctk.CTkLabel(
     master=bottom_left, 
@@ -737,11 +725,9 @@ notes_label = ctk.CTkLabel(
     """
 )
 
-# Vị trí mẹo thông tin
 
 notes_label.place(x=1, y=325)
 
-# Tải lên mô hình
 
 import_models_button = ctk.CTkButton(
     master=right_above_frame, 
@@ -754,11 +740,9 @@ import_models_button = ctk.CTkButton(
     command=browse_zip
 )
 
-# Vị trí nút tải lên
 
 import_models_button.place(x=60, y=10)
 
-# Phần chọn bộ xử lí
 
 processing_device_label = ctk.CTkLabel(
     master=right_above_frame, 
@@ -826,7 +810,6 @@ index_path_textbox = ctk.CTkTextbox(
     border_color="#404040"
 )
 
-# Vị trí của chọn mô hình và chỉ mục
 
 model_path_label.place(x=15, y=15)
 model_path_dropdown.place(x=10, y=35)
@@ -834,7 +817,6 @@ model_path_dropdown.place(x=10, y=35)
 index_path_label.place(x=15, y=85)
 index_path_textbox.place(x=10, y=105)
 
-# Phần cài đặt checkbox
 
 is_half_checkbox = ctk.CTkCheckBox(
     master=right_bottom_frame,
@@ -908,7 +890,6 @@ proposal_pitch_checkbox = ctk.CTkCheckBox(
     command=refresh_slider_positions
 )
 
-# Vị trí các checkbox
 
 is_half_checkbox.place(x=10, y=10)
 clean_audio_checkbox.place(x=160, y=10)
@@ -919,7 +900,6 @@ split_audio_checkbox.place(x=160, y=40)
 formant_shifting_checkbox.place(x=10, y=70)
 proposal_pitch_checkbox.place(x=160, y=70)
 
-# Phần cài đặt thanh trượt
 
 index_strength_label = ctk.CTkLabel(
     master=right_bottom_frame, 
@@ -1083,7 +1063,6 @@ proposal_pitch_threshold_slider = ctk.CTkSlider(
     command=proposal_pitch_threshold_event
 )
 
-# Vị trí phần thanh trượt và đặt mặc định
 
 index_strength_label.place(x=95, y=100)
 index_strength_slider.place(x=15, y=120)
