@@ -13,7 +13,7 @@ from scipy.signal import medfilt
 sys.path.append(os.getcwd())
 
 from rvc.lib.predictor.rmvpe import RMVPE
-from rvc.lib.predictor.utils import Autotune
+from rvc.utils import Autotune
 from rvc.lib.predictor.torchfcpe import FCPE
 from rvc.lib.predictor.pyworld import PYWORLD
 from rvc.lib.predictor.swipe import swipe, stonemask
