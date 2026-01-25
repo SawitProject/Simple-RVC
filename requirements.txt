@@ -4,7 +4,10 @@ omegaconf>=2.0.6
 torch>=2.3.1
 torchvision>=0.18.1
 torchaudio>=2.3.1
-faiss-cpu>=1.7.3
+faiss-cpu==1.7.3; python_version < "3.12"
+faiss-cpu>=1.7.3; python_version >= "3.12"
+transformers>=4.49.0
+scikit-learn
 einops>=0.8.0
 librosa>=0.10.2
 praat-parselmouth
@@ -18,4 +21,7 @@ tkinter-embed
 customtkinter
 matplotlib>=3.7.2
 gradio
-audio-separator[gpu]
+yt-dlp
+onnxruntime; sys_platform == 'darwin'
+onnxruntime-gpu; sys_platform != 'darwin'
+edge-tts>=7.2.7
