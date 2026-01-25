@@ -963,7 +963,7 @@ class Separator:
 
                     # Dynamically group chunks by stem name
                     for stem_path in output_files:
-                        # Extract stem name from filename: "chunk_0000_(Vocals).wav" → "Vocals"
+                        # Extract stem name from filename: "chunk_0000_(Vocals).wav" -> "Vocals"
                         filename = os.path.basename(stem_path)
                         match = re.search(r'_\(([^)]+)\)', filename)
                         if match:
