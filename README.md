@@ -84,7 +84,7 @@ assets/models
 
 # Planed Feature
 
-* Music Separation (Full Model) [ x ]
+* Music Separation (Full Model) [x]
 
 
 * Converting the RVC model to the ONNX model
