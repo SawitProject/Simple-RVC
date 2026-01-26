@@ -16,13 +16,12 @@ sys.path.append(os.getcwd())
 from rvc.lib.backend import opencl
 
 logger = logging.getLogger(__name__)
-    log_formatter = logging.Formatter(
-        fmt="%(asctime)s.%(msecs)03d - %(levelname)s - %(module)s - %(message)s",
+    log_formatter = basicConfig(
+        format="%(asctime)s.%(msecs)03d - %(levelname)s - %(module)s - %(message)s",
+        style="{", 
         datefmt="%Y-%m-%d %H:%M:%S"
     )
-    logger.addHandler(log_handler)
-
-
+    
 def change_rms(source_audio, source_rate, target_audio, target_rate, rate):
     rms2 = F.interpolate(torch.from_numpy(librosa.feature.rms(y=target_audio, frame_length=target_rate // 2 * 2, hop_length=target_rate // 2)).float().unsqueeze(0), size=target_audio.shape[0], mode="linear").squeeze()
     return (target_audio * (torch.pow(F.interpolate(torch.from_numpy(librosa.feature.rms(y=source_audio, frame_length=source_rate // 2 * 2, hop_length=source_rate // 2)).float().unsqueeze(0), size=target_audio.shape[0], mode="linear").squeeze(), 1 - rate) * torch.pow(torch.maximum(rms2, torch.zeros_like(rms2) + 1e-6), rate - 1)).numpy())
