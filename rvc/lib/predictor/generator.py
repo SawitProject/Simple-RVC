@@ -3,6 +3,7 @@ import sys
 import math
 import torch
 import parselmouth
+import re
 
 import numba as nb
 import numpy as np
@@ -20,6 +21,7 @@ from rvc.lib.predictor.pyworld import PYWORLD
 from rvc.lib.predictor.swipe import swipe, stonemask
 from rvc.lib.predictor.torchcrepe import CREPE, mean, median
 from rvc.lib.config import PREDICTOR_MODEL
+
 @nb.jit(nopython=True)
 def post_process(f0, f0_up_key, f0_mel_min, f0_mel_max):
     f0 = np.multiply(f0, pow(2, f0_up_key / 12))
@@ -50,21 +52,29 @@ class Generator:
         self.ref_freqs = [49.00, 51.91, 55.00, 58.27, 61.74, 65.41, 69.30, 73.42, 77.78, 82.41, 87.31, 92.50, 98.00, 103.83, 110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00,  207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61, 880.00, 932.33, 987.77, 1046.50]
         self.autotune = Autotune(self.ref_freqs)
         self.note_dict = self.autotune.note_dict
+        self.predictor_onnx = None
+        self.delete_predictor_onnx = False
+        self.alpha = 0.5
 
     def calculator(self, f0_method, x, f0_up_key = 0, p_len = None, filter_radius = 3, f0_autotune = False, f0_autotune_strength = 1, proposal_pitch = False, proposal_pitch_threshold = 255.0):
-        if p_len is None: p_len = x.shape[0] // self.window
-        if "hybrid" in f0_method: logger.debug("using hybrid method".format(f0_method=f0_method))
+        if p_len is None: 
+            p_len = x.shape[0] // self.window
+        
+        if "hybrid" in f0_method: 
+            f0 = self.get_f0_hybrid(f0_method, x, p_len, filter_radius)
+        else:
+            f0 = self.compute_f0(f0_method, x, p_len, filter_radius if filter_radius % 2 != 0 else filter_radius + 1)
 
-        f0 = self.compute_f0(f0_method, x, p_len, filter_radius if filter_radius % 2 != 0 else filter_radius + 1)
-
-        if isinstance(f0, tuple): f0 = f0[0]
+        if isinstance(f0, tuple): 
+            f0 = f0[0]
 
         if proposal_pitch: 
             up_key = proposal_f0_up_key(f0, proposal_pitch_threshold, 8)
             print(f"[INFO] Calculate up key: {up_key}")
             f0_up_key += up_key
 
-        if f0_autotune: f0 = Autotune.autotune_f0(self, f0, f0_autotune_strength)
+        if f0_autotune: 
+            f0 = self.autotune.autotune_f0(f0, f0_autotune_strength)
 
         return post_process(
             f0, 
@@ -125,7 +135,8 @@ class Generator:
 
         pad_size = (p_len - len(f0) + 1) // 2
 
-        if pad_size > 0 or p_len - len(f0) - pad_size > 0: f0 = np.pad(f0, [[pad_size, p_len - len(f0) - pad_size]], mode="constant")
+        if pad_size > 0 or p_len - len(f0) - pad_size > 0: 
+            f0 = np.pad(f0, [[pad_size, p_len - len(f0) - pad_size]], mode="constant")
         return f0
     
     def get_f0_mangio_crepe(self, x, p_len, model="full"):
@@ -149,7 +160,8 @@ class Generator:
         x /= np.quantile(np.abs(x), 0.999)
 
         audio = torch.unsqueeze(torch.from_numpy(x).to(self.device, copy=True), dim=0)
-        if audio.ndim == 2 and audio.shape[0] > 1: audio = torch.mean(audio, dim=0, keepdim=True).detach()
+        if audio.ndim == 2 and audio.shape[0] > 1: 
+            audio = torch.mean(audio, dim=0, keepdim=True).detach()
 
         f0 = self.mangio_crepe.compute_f0(audio.detach(), pad=True)
         return self._resize_f0(f0.squeeze(0).cpu().float().numpy(), p_len)
@@ -177,8 +189,8 @@ class Generator:
 
         return self._resize_f0(f0[0].cpu().numpy(), p_len)
 
-    def get_f0_djcm(self, x, p_len):
-
+    def get_f0_djcm(self, x, p_len, filter_radius=3, clipping=True):
+        if not hasattr(self, "djcm"):
             self.djcm = DJCM(
                 os.path.join(
                     PREDICTOR_MODEL, 
@@ -186,7 +198,6 @@ class Generator:
                 ), 
                 is_half=self.is_half, 
                 device=self.device, 
-
             )
 
         filter_radius /= 10
@@ -205,7 +216,9 @@ class Generator:
             )
         )
         
-        if self.predictor_onnx and self.delete_predictor_onnx: del self.djcm.model, self.djcm
+        if self.predictor_onnx and self.delete_predictor_onnx: 
+            del self.djcm.model, self.djcm
+        
         return self._resize_f0(f0, p_len)
     
     def get_f0_fcpe(self, x, p_len, legacy=False):
@@ -243,7 +256,8 @@ class Generator:
         return self._resize_f0(f0, p_len)
     
     def get_f0_pyworld(self, x, p_len, filter_radius, model="harvest"):
-        if not hasattr(self, "pw"): self.pw = PYWORLD()
+        if not hasattr(self, "pw"): 
+            self.pw = PYWORLD()
 
         x = x.astype(np.double)
         pw = self.pw.harvest if model == "harvest" else self.pw.dio
@@ -263,7 +277,8 @@ class Generator:
             f0
         )
 
-        if filter_radius > 2 and model == "harvest": f0 = medfilt(f0, filter_radius)
+        if filter_radius > 2 and model == "harvest": 
+            f0 = medfilt(f0, filter_radius)
         elif model == "dio":
             for index, pitch in enumerate(f0):
                 f0[index] = round(pitch, 1)
@@ -290,12 +305,14 @@ class Generator:
         )
 
     def get_f0_hybrid(self, methods_str, x, p_len, filter_radius):
-        methods_str = re.search(r"hybrid\[(.+)\]", methods_str)
-        if methods_str: 
+        methods_match = re.search(r"hybrid\[(.+)\]", methods_str)
+        if methods_match: 
             methods = [
                 method.strip() 
-                for method in methods_str.group(1).split("+")
+                for method in methods_match.group(1).split("+")
             ]
+        else:
+            methods = []
 
         n = len(methods)
         f0_stack = []
@@ -315,8 +332,10 @@ class Generator:
         
         f0_mix = np.zeros(p_len)
 
-        if not f0_stack: return f0_mix
-        if len(f0_stack) == 1: return f0_stack[0]
+        if not f0_stack: 
+            return f0_mix
+        if len(f0_stack) == 1: 
+            return f0_stack[0]
 
         weights = (1 - np.abs(np.arange(n) / (n - 1) - (1 - self.alpha))) ** 2
         weights /= weights.sum()
@@ -344,7 +363,6 @@ class Generator:
             hop_length=self.hop_length
         )
 
-        if not self.if_yin: f0 = f0[0]
+        if not self.if_yin: 
+            f0 = f0[0]
         return self._resize_f0(f0, p_len)
-
-    
