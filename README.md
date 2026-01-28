@@ -11,31 +11,60 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 # Key Feature
 
 * Pitch extraction methods 20+ like: pm, dio, crepe, fcpe, rmvpe, harvest, yin, pyin and more!
+* Simple and intuitive GUI interface
+* Powerful command-line interface for batch processing
+* Supports multiple embedder models (contentvec, hubert)
+* Advanced features: formant shifting, noise reduction, autotune
+
+## Quick Start
+
+### Install
+```
+pip install git+https://github.com/SawitProject/rvc.git
+```
+
+### GUI
+```
+rvc
+# or
+python gui.py
+```
+
+### CLI
+```
+rvc -i input.wav -o output.wav -m model.pth -p 12
+```
 
 
 ## INSTALL
 
-**requires Python 3.10.x or 3.11.x and FFmpeg installed**
+**Requires Python 3.10-3.12 and FFmpeg installed**
 
+### Option 1: Install from Git (Recommended)
+```
+pip install git+https://github.com/SawitProject/rvc.git
+```
+
+### Option 2: Install from Source (Development)
 ```
 git clone https://github.com/SawitProject/rvc.git
+cd rvc
+pip install -e .
 ```
 
-NVIDIA:
-```
-python -m pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu118
-python -m pip install -r requirements.txt
-```
-AMD:
-```
-python -m pip install torch==2.6.0 torchaudio==2.6.0 torchvision
-python -m pip install https://github.com/artyom-beilis/pytorch_dlprim/releases/download/0.2.0/pytorch_ocl-0.2.0+torch2.6-cp311-none-win_amd64.whl
-python -m pip install -r requirements.txt
-```
-CPU:
-```
-python -m pip install -r requirements.txt
-```
+### Platform-Specific Notes
+
+**NVIDIA GPU:**
+- PyTorch with CUDA support is automatically installed
+- Ensure you have CUDA drivers installed
+
+**AMD GPU:**
+- May require additional setup for OpenCL support
+- Consider using ROCm PyTorch if available for your hardware
+
+**CPU Only:**
+- The package will automatically use CPU inference
+- Note: CPU inference will be slower than GPU
 
 ## Run GUI
 
@@ -48,12 +77,59 @@ or run with window file:
 open-gui.bat
 ```
 
+## Command Line Interface
+
+After installation, you can use the RVC CLI tool for voice conversion:
+
+```
+rvc -i input.wav -o output.wav -m model.pth
+```
+
+**Basic Options:**
+- `-i, --input` - Path to input audio file or directory
+- `-o, --output` - Path to output audio file (default: ./output.wav)
+- `-m, --model` - Path to .pth model file (required)
+
+**Common Options:**
+- `-p, --pitch` - Pitch shift in semitones (default: 0)
+- `-f0, --f0_method` - F0 prediction method (default: rmvpe)
+- `-idx, --index` - Path to .index file
+- `-ir, --index_rate` - Index rate for feature retrieval (default: 0.5)
+
+**Advanced Options:**
+- `-split, --split_audio` - Split audio into chunks for processing
+- `-clean, --clean_audio` - Apply noise reduction to output
+- `-fa, --f0_autotune` - Enable F0 autotune
+- `-fs, --formant_shifting` - Enable formant shifting
+
+**Example Usage:**
+```
+# Simple conversion
+rvc -i input.wav -o output.wav -m model.pth -p 12
+
+# Batch conversion from directory
+rvc -i ./audio_folder -m model.pth -p 12 -f0 rmvpe
+
+# With index file and autotune
+rvc -i input.wav -m model.pth -idx model.index -ir 0.75 -fa
+```
+
+For more options, run:
+```
+rvc --help
+```
+
 ## Model
 
-**Click `Import Model (.zip)` and upload the zip model containing the .pth and .index weight files (If any)**
+**Using the GUI:**
+- Click `Import Model (.zip)` and upload the zip model containing the .pth and .index weight files (If any)
+- Or manually place models in your working directory
 
-**Or load the model manually**
+**Using CLI:**
+- Specify the model path with the `-m` option
+- Specify the index path with the `-idx` option (recommended)
 
+**Model Location for GUI:**
 ```
 assets/models
 ├── Model 1
@@ -63,6 +139,8 @@ assets/models
     ├── model_name.pth
     └── model_name.index
 ```
+
+**Note:** Pre-trained RVC models can be downloaded from various sources. Ensure you have the right to use any model before converting audio with it.
 
 ## Disclaimer
 - The RVC project is developed for research, educational, and personal entertainment purposes. I do not encourage, nor do I take any responsibility for, any misuse of voice conversion technology for fraudulent purposes, identity impersonation, or violations of privacy or copyright belonging to any individual or organization.
