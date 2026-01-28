@@ -29,7 +29,7 @@ except ImportError as e:
     print(f"[ERROR] Required RVC modules not found: {e}")
     print("Please install the RVC library first: pip install .")
     sys.exit(1)
-
+from rvc.var import method
 # Configure logging to silence noisy libraries
 for l in ["torch", "faiss", "omegaconf", "httpx", "httpcore", "faiss.loader", "numba.core", "urllib3", "transformers", "matplotlib"]:
     logging.getLogger(l).setLevel(logging.ERROR)
@@ -342,7 +342,7 @@ Examples:
     parser.add_argument("-em", "--embedder", type=str, default="contentvec_base",
                        help="Embedder model (contentvec_base, hubert_base)")
     parser.add_argument("-f0", "--f0_method", type=str, default="rmvpe",
-                       choices=["rmvpe", "pm", "harvest", "crepe", "hybrid"],
+                       choices=[method],
                        help="F0 prediction method")
     
     # Optional Arguments - Audio Adjustments
