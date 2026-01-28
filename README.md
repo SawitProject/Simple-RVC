@@ -18,11 +18,9 @@ A simple, high-quality voice conversion tool focused on simplicity and ease of u
 ## Quick Start
 
 ### Install
+
 ```
 pip install git+https://github.com/SawitProject/rvc.git
-```
-
-
 ```
 
 ### CLI
@@ -116,24 +114,11 @@ rvc --help
 
 ## Model
 
-**Using the GUI:**
-- Click `Import Model (.zip)` and upload the zip model containing the .pth and .index weight files (If any)
-- Or manually place models in your working directory
 
 **Using CLI:**
 - Specify the model path with the `-m` option
 - Specify the index path with the `-idx` option (recommended)
 
-**Model Location for GUI:**
-```
-assets/models
-├── Model 1
-│   ├── model_name.pth
-│   └── model_name.index
-└── Model 2
-    ├── model_name.pth
-    └── model_name.index
-```
 
 **Note:** Pre-trained RVC models can be downloaded from various sources. Ensure you have the right to use any model before converting audio with it.
 
@@ -155,14 +140,6 @@ assets/models
 
 - I am not liable for any direct or indirect damages arising from the use of this project.
 
-# Planed Feature
-
-
-* Converting the RVC model to the ONNX model
-
-* Embedded extraction supports models for: onnx (.onnx), transformers (.bin - .json), spin (.bin - .json), whisper (.pt).
-
-* Gradio GUI
 
   
 ## Project-based construction
